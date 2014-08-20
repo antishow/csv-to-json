@@ -1,0 +1,48 @@
+#!/usr/bin/php
+
+<?php
+error_reporting(E_ERROR);
+
+$source_file = $argv[1];
+
+if(!$source_file)
+{
+	exit("Error: Didn't specify csv file to convert! Usage: csv-to-json [filename]" . PHP_EOL);
+}
+
+if(($csv = fopen($source_file, "r")) !== FALSE)
+{
+	$row_index = 0;
+	$json_obj = array();
+	$keys = array();
+
+	while(($row_data = fgetcsv($csv)) !== FALSE)
+	{
+		$row = array();
+
+		for($cell_index = 0; $cell_index < count($row_data); $cell_index++)
+		{
+
+			if($row_index === 0)
+			{
+				$keys[] = $row_data[$cell_index];
+			}
+			else
+			{
+				$key = $keys[$cell_index];
+				$row[$key] = $row_data[$cell_index];
+			}
+		}
+
+		if($row_index >= 1){
+			$json_obj[] = $row;			
+		}
+		$row_index++;
+	}
+
+	file_put_contents(str_replace(".csv", ".json", $source_file), json_encode($json_obj));
+}
+else
+{
+	exit("Error: Could not open {$source_file}!" . PHP_EOL);
+}
